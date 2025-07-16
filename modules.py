@@ -97,6 +97,16 @@ class SelfAttention(nn.Module):
 
 # Main diffusion model architecture
 class UNet(nn.Module):
+    """
+    UNet architecture for noise prediction in DDPM
+    
+    Key components:
+    1. Time embedding: Converts timestep t to feature vector
+    2. Encoder: Downsamples input while extracting features
+    3. Bottleneck: Processes features at lowest resolution
+    4. Decoder: Upsamples while combining with skip connections
+    5. Self-attention: Enhances spatial feature relationships
+    """
     def __init__(self, in_channels=3, out_channels=3, time_dim=256, device='cuda'):
         super().__init__()
 
@@ -134,6 +144,14 @@ class UNet(nn.Module):
         return pos_enc
     
     def forward(self, x, t):
+        """
+        Forward pass of UNet
+        Args:
+            x: Noisy images [batch, 3, 64, 64]
+            t: Timesteps [batch]
+        Returns:
+            Predicted noise [batch, 3, 64, 64]
+        """
         t = t.unsqueeze(-1).type(torch.float)
         t = self.pos_encoding(t, self.time_dim)
 

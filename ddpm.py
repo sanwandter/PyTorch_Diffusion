@@ -24,9 +24,9 @@ class Diffusion:
         self.betas = self.prepare_noise_schedule().to(device)
 
         # Pre-calculate alpha values for the forward diffusion process
-        self.alpha = 1.0 - self.betas
+        self.alpha = 1.0 - self.betas # α_t = 1 - β_t
         # Pre-calculate the cumulative product of alphas (alpha_hat)
-        self.alpha_hat = torch.cumprod(self.alpha, dim=0)
+        self.alpha_hat = torch.cumprod(self.alpha, dim=0) # ᾱ_t = ∏(α_s) for s=1 to t
     
     def prepare_noise_schedule(self):
         return torch.linspace(self.beta_start, self.beta_end, self.noise_steps)
@@ -35,6 +35,15 @@ class Diffusion:
         """
         Applies noise to the images `x` for a given timestep `t`.
         This is the forward process q(x_t | x_0).
+        Applies noise to clean images according to the DDPM paper equation:
+        x_t = √ᾱ_t * x_0 + √(1 - ᾱ_t) * ε, where ε ~ N(0,I)
+
+        Args:
+            x: Clean images [batch_size, channels, height, width]
+            t: Timesteps [batch_size]
+        Returns:
+            noisy_images: x_t 
+            noise: ε (target for UNet to predict)
         """
         sqrt_alpha_hat = torch.sqrt(self.alpha_hat[t])[:, None, None, None]
         sqrt_one_minus_alpha_hat = torch.sqrt(1 - self.alpha_hat[t])[:, None, None, None]
@@ -45,12 +54,16 @@ class Diffusion:
         return torch.randint(low=0, high=self.noise_steps, size=(n,))
     
     def sample(self, model, n):
+        """
+        Reverse diffusion process: Generate images from noise
+        Implements Algorithm 2 from DDPM paper "Sampling"
+        """
         logging.info(f"Sampling {n} new images....")
         model.eval()
-        # Algorithm 2 from the DDPM paper
-        # "Sampling"
         with torch.no_grad():
+            # Start from pure noise x_T ~ N(0,I)
             x = torch.randn((n, 3, self.img_size, self.img_size), device=self.device)
+            # Iteratively denoise for T steps
             for i in tqdm(reversed(range(self.noise_steps)), position=0):
                 t = (torch.ones(n)*i).long().to(self.device)
                 pred_noise = model(x, t)
@@ -61,6 +74,7 @@ class Diffusion:
                     noise = torch.randn_like(x)
                 else:
                     noise = torch.zeros_like(x)
+                # Reverse diffusion step - equation from DDPM paper
                 x = 1 / torch.sqrt(alpha) * (x - (1 - alpha) / torch.sqrt(1 - alpha_hat) * pred_noise) + torch.sqrt(beta) * noise
         model.train()
         x = (x.clamp(-1, 1) + 1) / 2  # Rescale to [0, 1]
@@ -91,9 +105,9 @@ def train(args):
             # Add noise to the images
             x_t, noise = diffusion.noise_images(images, t)
             # Predict the noise using the model
-            pred_noise = model(x_t, t)
+            pred_noise = model(x_t, t) # ε_θ(x_t, t)
             # Calculate the loss
-            loss = mse(pred_noise, noise)
+            loss = mse(pred_noise, noise) # ||ε - ε_θ(x_t, t)||²
 
             optimizer.zero_grad()
             loss.backward()
