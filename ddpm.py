@@ -116,8 +116,9 @@ def train(args):
             pbar.set_postfix(MSE=loss.item())
             logger.add_scalar('MSE', loss.item(), global_step=epoch * l + i)
         
-        sampled_images = diffusion.sample(model, n=images.shape[0])
-        save_images(sampled_images, os.path.join('results', args.run_name, f'{epoch}.png'))
+        # Sample fixed number of images for consistent monitoring
+        sampled_images = diffusion.sample(model, n=4)
+        save_images(sampled_images, os.path.join('results', args.run_name, f'{epoch}.png'), nrow=4)
         torch.save(model.state_dict(), os.path.join('models', args.run_name, 'last.pt'))
 
 
@@ -128,7 +129,7 @@ def launch():
     args = parser.parse_args()
     args.run_name = 'ddpm_run'
     args.epochs = 500
-    args.batch_size = 12
+    args.batch_size = 8
     args.img_size = 64
     args.dataset_path = '../dataset/landscapes'
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
