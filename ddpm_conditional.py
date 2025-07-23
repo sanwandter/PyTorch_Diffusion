@@ -1,6 +1,6 @@
 import os
-from shutil import copy
 import numpy as np
+import copy
 import torch
 import torch.nn as nn
 from matplotlib import pyplot as plt

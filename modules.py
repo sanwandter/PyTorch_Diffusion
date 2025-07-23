@@ -254,7 +254,7 @@ class UNetConditional(nn.Module):
         pos_enc = torch.cat([pos_enc_a, pos_enc_b], dim=-1)
         return pos_enc
     
-    def forward(self, x, t):
+    def forward(self, x, t, y):
         """
         Forward pass of UNet
         Args:
@@ -265,6 +265,9 @@ class UNetConditional(nn.Module):
         """
         t = t.unsqueeze(-1).type(torch.float)
         t = self.pos_encoding(t, self.time_dim)
+
+        if y is not None:
+            t += self.label_emb(y)
 
         # Encoder path with skip connections
         x1 = self.inc(x)
