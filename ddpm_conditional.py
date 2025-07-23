@@ -68,7 +68,7 @@ class Diffusion:
             # Iteratively denoise for T steps
             for i in tqdm(reversed(range(self.noise_steps)), position=0):
                 t = (torch.ones(n)*i).long().to(self.device)
-                pred_noise = model(x, t)
+                pred_noise = model(x, t, labels)
                 if cfg_scale > 0:
                     # Apply classifier-free guidance
                     uncond_pred_noise = model(x, t, None)  # Unconditional prediction
@@ -146,8 +146,8 @@ def launch():
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     args.run_name = 'ddpm_conditional_run'
-    args.epochs = 500
-    args.batch_size = 8
+    args.epochs = 300
+    args.batch_size = 4
     args.img_size = 64
     args.num_classes = 10
     args.dataset_path = '../dataset/cifar10-64/train'
