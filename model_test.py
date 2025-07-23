@@ -29,16 +29,20 @@ def generate_images(args):
     # Save the generated images
     output_dir = 'results/generated_images'
     os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, f'{args.model}_images.png')
+    output_path = os.path.join(output_dir, f'{args.model}_images{args.idx}.png')
     save_images(generated_images, output_path, nrow=4)
 
 if __name__ == '__main__':  
-    parser = argparse.ArgumentParser()
-    args = parser.parse_args()
-    args.model_path = 'models/ddpm_run/landscape.pt' # Change this to model path
-    args.img_size = 64 
-    args.device = 'cuda' if torch.cuda.is_available() else 'cpu' 
-    args.model = 'landscape' # Change this to model name
+    for i in range(10):
+        parser = argparse.ArgumentParser()
+        args = parser.parse_args()
+        args.model_path = 'models/ddpm_run/landscape.pt' # Change this to model path
+        args.img_size = 64 
+        args.device = 'cuda' if torch.cuda.is_available() else 'cpu' 
+        args.model = 'landscape' # Change this to model name
+        args.idx = i
+        generate_images(args)
 
 
-    generate_images(args)
+
+
