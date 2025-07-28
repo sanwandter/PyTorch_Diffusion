@@ -37,23 +37,23 @@ Gradually adds noise over T=1000 timesteps:
 
 $$q(x_t | x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha}_t} x_0, (1 - \bar{\alpha}_t) \mathbf{I})$$
 
-Where $\alpha_t = 1 - \beta_t$, and $\bar{\alpha}_t = \prod_{s=1}^t \alpha_s$.
+Where $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod\_{s=1}^t \alpha_s$  
 And $\beta_t$ increases linearly from $10^{-4}$ to $0.02$
 
 
 ### Training Objective
 The model learns to predict noise $\epsilon$ at each timestep:
 
-$$L = \mathbb{E}_{x_0, \epsilon, t} \left[ \|\epsilon - \epsilon_\theta(x_t, t)\|^2 \right]$$
+$$L = \mathbb{E}_{x_0, \epsilon, t} \left[ \|\epsilon - \epsilon\_\theta(x_t, t)\|^2 \right]$$
 
 For conditional models with class labels $y$:
 
-$$L = \mathbb{E}_{x_0, y, \epsilon, t} \left[ \|\epsilon - \epsilon_\theta(x_t, t, y)\|^2 \right]$$
+$$L = \mathbb{E}_{x_0, y, \epsilon, t} \left[ \|\epsilon - \epsilon\_\theta(x_t, t, y)\|^2 \right]$$
 
 ### Classifier-Free Guidance
 Enhances conditional generation quality:
 
-$$\tilde{\epsilon}_\theta(x_t, t, y) = \epsilon_\theta(x_t, t, \emptyset) + w \cdot (\epsilon_\theta(x_t, t, y) - \epsilon_\theta(x_t, t, \emptyset))$$
+$$\tilde{\epsilon}\_\theta(x_t, t, y) = \epsilon\_\theta(x_t, t, \emptyset) + w \cdot (\epsilon\_\theta(x_t, t, y) - \epsilon\_\theta(x_t, t, \emptyset))$$
 
 Where $w = 3$ is the guidance scale.
 
@@ -71,7 +71,7 @@ Where $w = 3$ is the guidance scale.
 2. **Iterative Denoising**: For $t = T$ down to $1$:
    - Predict noise: $\epsilon_\theta(x_t, t)$ or $\epsilon_\theta(x_t, t, y)$
    - Apply classifier-free guidance (conditional only)
-   - Denoise: $x_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t, t)\right) + \sigma_t z$
+   - Denoise: $x_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon\_\theta(x_t, t)\right) + \sigma_t z$
 
 ## Results
 
