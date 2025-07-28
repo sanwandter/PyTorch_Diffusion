@@ -196,7 +196,7 @@ class EMA:
     def update_average(self, old, new):
         if old is None:
             return new
-        return old * self.beta + new * (1 - self.beta)
+        return old * self.beta + new * (1 - self.beta) # Scale the new weight by (1 - beta) to ensure it contributes to the average
     
     def step_ema(self, ema_model, model, step_start_ema=2000):
         if self.step < step_start_ema:

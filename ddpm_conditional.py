@@ -72,7 +72,8 @@ class Diffusion:
                 if cfg_scale > 0:
                     # Apply classifier-free guidance
                     uncond_pred_noise = model(x, t, None)  # Unconditional prediction
-                    pred_noise = torch.lerp(uncond_pred_noise, pred_noise, cfg_scale)  # Scale the prediction
+                    # Interpolation between conditional and unconditional predicted noise: ε_t(x_t, t) = ε_t,θ(x_t, t, None) + cfg_scale * (ε_t,c(x_t, t, labels) - ε_θ(x_t, t, None))
+                    pred_noise = torch.lerp(uncond_pred_noise, pred_noise, cfg_scale)  
                 alpha = self.alpha[t][:, None, None, None]
                 alpha_hat = self.alpha_hat[t][:, None, None, None]
                 beta = self.betas[t][:, None, None, None]
@@ -146,7 +147,7 @@ def launch():
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     args.run_name = 'ddpm_conditional_run'
-    args.epochs = 300
+    args.epochs = 200
     args.batch_size = 4
     args.img_size = 64
     args.num_classes = 10
